@@ -250,6 +250,8 @@ function JuggleYourStudies() {
   const objectIdRef = useRef(0);
   const effectIdRef = useRef(0);
   const comboRef = useRef(0);
+  const laneCooldownRef = useRef([0, 0, 0, 0]); // Cooldown par lane (timestamp)
+  const LANE_COOLDOWN_MS = 150; // 150ms entre chaque clic sur la même lane
 
   // Synchroniser la ref du combo
   useEffect(() => {
@@ -339,6 +341,13 @@ function JuggleYourStudies() {
 
   const handleLaneTap = useCallback((laneId) => {
     if (screen !== 'game') return;
+    
+    // Vérifier le cooldown anti-spam
+    const now = Date.now();
+    if (now - laneCooldownRef.current[laneId] < LANE_COOLDOWN_MS) {
+      return; // Ignorer le clic, trop rapide
+    }
+    laneCooldownRef.current[laneId] = now;
 
     setActiveLanes(prev => [...prev, laneId]);
     setTimeout(() => setActiveLanes(prev => prev.filter(l => l !== laneId)), 150);
